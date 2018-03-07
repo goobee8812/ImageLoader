@@ -92,6 +92,29 @@ public class MainActivity extends AppCompatActivity {
                 lightOn();
             }
         });
+        mDirPopupWindow.setOnDirSelectedListener(new ListImageDirPopupWindow.OnDirSelectedListener() {
+            @Override
+            public void onSeleted(FolderBean folderBean) {
+                //更新
+                mCurrentDir = new File(folderBean.getDir());
+                mImgs = Arrays.asList(mCurrentDir.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        if (name.endsWith(".jpg")
+                                || name.endsWith(".jpeg")
+                                || name.endsWith(".png"))
+                            return true;
+                        return false;
+                    }
+                }));
+                mImageAdapter = new ImageAdapter(MainActivity.this,mImgs,mCurrentDir.getAbsolutePath());
+                mGridView.setAdapter(mImageAdapter);
+                mDirCount.setText(mImgs.size()+"");
+                mDirName.setText(folderBean.getName());
+                mDirPopupWindow.dismiss();
+            }
+        });
+
     }
 
     /**
@@ -135,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
         mBottomLy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //弹出popupwindow
+                mDirPopupWindow.setAnimationStyle(R.style.dir_popupwindow_anim);
                 mDirPopupWindow.showAsDropDown(mBottomLy,0,0);
                 lightOff();
             }

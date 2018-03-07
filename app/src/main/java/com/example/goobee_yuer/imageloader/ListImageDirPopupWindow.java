@@ -2,7 +2,6 @@ package com.example.goobee_yuer.imageloader;
 
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
@@ -11,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -32,7 +32,15 @@ public class ListImageDirPopupWindow extends PopupWindow {
     private View mConvertView;
     private ListView mListView;
     private List<FolderBean> mDatas;
-    
+    //ListView的接口
+    public interface OnDirSelectedListener {
+        void onSeleted(FolderBean folderBean);
+    }
+    public OnDirSelectedListener mListener;
+
+    public void setOnDirSelectedListener(OnDirSelectedListener listener) {
+        mListener = listener;
+    }
 
     public ListImageDirPopupWindow(Context context, List<FolderBean> datas) {
         calWidthAndHeigth(context);
@@ -72,7 +80,14 @@ public class ListImageDirPopupWindow extends PopupWindow {
 
     private void initEvent() {
         //设置listview的触摸事件
-
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (mListener != null){
+                    mListener.onSeleted(mDatas.get(position));
+                }
+            }
+        });
     }
 
     /**

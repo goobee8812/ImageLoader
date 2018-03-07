@@ -332,6 +332,7 @@ public class ImageLoader {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        //每次添加就立即发送通知给线程池请求处理，当后台线程池满了，无法处理，就会堵塞在线程池的队列，因此添加信号量，让消息队列堵塞。
         mPoolThreadHandler.sendEmptyMessage(0x110);
     }
 
