@@ -19,11 +19,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Adapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -43,6 +45,8 @@ import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+
+
     // 要申请的权限
     private String[] permissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     public static final int DATA_LOAD = 0x110;
@@ -58,8 +62,9 @@ public class MainActivity extends AppCompatActivity {
     private int mMaxCount;
 
     private List<FolderBean> mFolderBeans = new ArrayList<FolderBean>();
-
     private ProgressDialog mProgressDialog;
+
+    private ListImageDirPopupWindow mDirPopupWindow;
 
     private Handler mHandler = new Handler(){
         @Override
@@ -70,12 +75,33 @@ public class MainActivity extends AppCompatActivity {
                     mProgressDialog.dismiss();
                     //绑定数据到View中
                     data2View();
+                    //初始化popupWindow
+                    initDirPopupWindow();
                     break;
                 default:
                     break;
             }
         }
     };
+
+    private void initDirPopupWindow() {
+        mDirPopupWindow = new ListImageDirPopupWindow(this,mFolderBeans);
+        mDirPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                lightOn();
+            }
+        });
+    }
+
+    /**
+     * 内容区域变亮
+     */
+    private void lightOn() {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.alpha = 1.0f;
+        getWindow().setAttributes(lp);
+    }
 
     private void data2View() {
         if (mCurrentDir == null){
@@ -106,7 +132,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initEvent() {
+        mBottomLy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDirPopupWindow.showAsDropDown(mBottomLy,0,0);
+                lightOff();
+            }
+        });
+    }
 
+    /**
+     * 内容区域变暗
+     */
+    private void lightOff() {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.alpha = 0.3f;
+        getWindow().setAttributes(lp);
     }
 
     /**
@@ -184,56 +225,6 @@ public class MainActivity extends AppCompatActivity {
         mBottomLy = (RelativeLayout) findViewById(R.id.id_bottom_ly);
         mDirName = (TextView) findViewById(R.id.id_dir_name);
         mDirCount = (TextView) findViewById(R.id.id_dir_count);
-    }
-    private class ImageAdapter extends BaseAdapter{
-        private String mDirPath;
-        private List<String> mImgPaths;
-        private LayoutInflater mInflater;
-        public ImageAdapter(Context context, List<String> mDatas, String dirPath){
-            this.mDirPath = dirPath;
-            this.mImgPaths = mDatas;
-            mInflater = LayoutInflater.from(context);
-        }
-        @Override
-        public int getCount() {
-            return mImgPaths.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return mImgPaths.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder viewHolder = null;
-            if (convertView == null){
-                convertView = mInflater.inflate(R.layout.item_gridview,parent,false);
-                viewHolder = new ViewHolder();
-                viewHolder.mImg = (ImageView) convertView.findViewById(R.id.id_item_image);
-                viewHolder.mSelect = (ImageButton) convertView.findViewById(R.id.id_item_select);
-                convertView.setTag(viewHolder);
-            }else {
-                viewHolder = (ViewHolder) convertView.getTag();
-            }
-            //设置为无图片重置状态
-            viewHolder.mImg.setImageResource(R.drawable.pictures_no);
-            viewHolder.mSelect.setImageResource(R.drawable.picture_unselected);
-
-            ImageLoader.getInstance(3, ImageLoader.Type.LIFO).loadImage(mDirPath + "/" + mImgPaths.get(position),viewHolder.mImg);
-//            ImageLoader.getInstance().loadImage(mDirPath + "/" + mImgPaths.get(position),viewHolder.mImg);
-
-            return convertView;
-        }
-        private class ViewHolder{
-            ImageView mImg;
-            ImageButton mSelect;
-        }
     }
 
     @Override

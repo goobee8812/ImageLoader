@@ -13,8 +13,7 @@
         android:listSelector="@android:color/transparent"
         android:horizontalSpacing="3dp"
         android:verticalSpacing="3dp"
-        >
-
+        android:layout_above="@+id/id_bottom_ly">
     </GridView>
     <RelativeLayout
         android:id="@+id/id_bottom_ly"
